@@ -1,0 +1,251 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Chatbot interattivo per conversazioni e calcoli matematici.">
+    <link rel="icon" href="favicon.ico" type="image/x-icon">
+    <title>Chatbot Interattivo</title>
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            height: 100vh;
+            margin: 0;
+            background: linear-gradient(135deg, #f3f4f6, #e5e7eb);
+            color: #333;
+        }
+
+        .chat-container {
+            width: 450px;
+            background-color: #ffffff;
+            border-radius: 20px;
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.15);
+            display: flex;
+            flex-direction: column;
+            padding: 20px;
+        }
+
+        .chat-box {
+            flex-grow: 1;
+            max-height: 400px;
+            overflow-y: auto;
+            margin-bottom: 15px;
+            padding: 15px;
+            border: 1px solid #e0e0e0;
+            border-radius: 10px;
+            background-color: #f9fafb;
+            font-size: 15px;
+            line-height: 1.7;
+        }
+
+        .input-container {
+            display: flex;
+            gap: 10px;
+        }
+
+        input[type="text"] {
+            width: 100%;
+            padding: 14px;
+            border-radius: 10px;
+            border: 1px solid #d1d5db;
+            font-size: 15px;
+        }
+
+        button {
+            padding: 14px;
+            background-color: #6c63ff;
+            color: white;
+            border: none;
+            border-radius: 10px;
+            cursor: pointer;
+            font-size: 15px;
+            font-weight: 700;
+            transition: all 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #5753d9;
+        }
+
+        .message {
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+        }
+
+        .user {
+            justify-content: flex-end;
+            text-align: right;
+        }
+
+        .user .bubble {
+            background-color: #e0f7fa;
+            color: #063933;
+            border-radius: 20px 20px 0 20px;
+            padding: 12px 18px;
+        }
+
+        .bot {
+            justify-content: flex-start;
+            text-align: left;
+        }
+
+        .bot .bubble {
+            background-color: #f3f4f6;
+            color: #333;
+            border-radius: 20px 20px 20px 0;
+            padding: 12px 18px;
+        }
+    </style>
+</head>
+<body>
+    <div class="chat-container">
+        <div class="chat-box" id="chat-box"></div>
+
+        <div class="input-container">
+            <input type="text" id="user-input" placeholder="Scrivi un messaggio o un'operazione matematica..." autofocus>
+            <button id="send-btn">Invia</button>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('send-btn').addEventListener('click', function () {
+            sendMessage();
+        });
+
+        document.getElementById('user-input').addEventListener('keydown', function(event) {
+            if (event.key === 'Enter') {
+                sendMessage();
+            }
+        });
+
+        function sendMessage() {
+            const userInput = document.getElementById('user-input').value.trim();
+            if (userInput) {
+                addMessage('user', userInput);
+                getBotResponse(userInput);
+                document.getElementById('user-input').value = '';
+            }
+        }
+
+        function addMessage(sender, message) {
+            const chatBox = document.getElementById('chat-box');
+            const messageElement = document.createElement('div');
+            messageElement.classList.add(sender);
+            const bubble = document.createElement('div');
+            bubble.classList.add('bubble');
+            bubble.textContent = message;
+            messageElement.appendChild(bubble);
+            chatBox.appendChild(messageElement);
+            chatBox.scrollTop = chatBox.scrollHeight;
+        }
+
+        function getBotResponse(userMessage) {
+            const normalizedMessage = userMessage.toLowerCase().trim();
+            let botMessage;
+
+            if (isMathExpression(normalizedMessage)) {
+                try {
+                    botMessage = `Il risultato è: ${calculateExpression(normalizedMessage)}`;
+                } catch {
+                    botMessage = "Errore nel calcolo. Assicurati di usare solo numeri e operatori validi.";
+                }
+            } else {
+               
+                const responses = {
+                    "ciao": "Ciao! Come posso aiutarti oggi?",
+                    "salve": "Ciao! Come posso aiutarti oggi?",
+                    "buongiorno": "Buongiorno! Spero che tu abbia una giornata fantastica. ☀️",
+                    "buonasera": "Buonasera! Come posso esserti utile?",
+                    "come stai": "Sto bene, grazie! E tu?",
+                    "aiuto": "Certo, sono qui per aiutarti! Puoi chiedermi qualsiasi cosa. 😊",
+                    "che ore sono": `Sono le ${new Date().toLocaleTimeString()}. Posso fare altro per te?`,
+                    "ora": `Sono le ${new Date().toLocaleTimeString()}.`,
+                    "mi dici l'orario": `Sono le ${new Date().toLocaleTimeString()}. Posso fare altro per te?`,
+                    "grazie": "Prego! Sono qui per aiutarti. 😊",
+                    "cosa sei": "Sono un chatbot pronto ad aiutarti con domande, curiosità e altro!",
+                    "grazie mille": "Di nulla! Se hai bisogno, sono qui. 😉",
+                    "chi sei": "Sono un assistente virtuale creato per aiutarti. 😊",
+                    "che giorno è oggi": `Oggi è ${new Date().toLocaleDateString()}.`,
+                    "che data è oggi": `Oggi è ${new Date().toLocaleDateString()}.`,
+                    "data": `Oggi è ${new Date().toLocaleDateString()}.`,
+                    "raccontami una barzelletta": "Perché il programmatore è andato in terapia? Perché aveva troppi bug! 🤖😂",
+                    "barzelletta": "Perché il computer è andato dal dottore? Aveva un virus! 😂",
+                    "raccontami una barzelletta": "Perché il computer è andato dal dottore? Aveva un virus! 😂",
+                    "python": "Python è un ottimo linguaggio per iniziare a programmare! Vuoi imparare qualcosa in particolare?",
+                    "javascript": "JavaScript è un linguaggio versatile per il web! Vuoi qualche consiglio su come usarlo?",
+                    "meteo": "Non posso controllare il meteo al momento, ma puoi usare un sito come weather.com per le previsioni!",
+                    "cosa puoi fare": "Posso rispondere alle tue domande, raccontarti barzellette o aiutarti con alcune informazioni di base.",
+                    "addio": "Arrivederci! Spero di rivederti presto. 😊",
+                    "arrivederci": "Ci vediamo presto! Buona giornata! 👋",
+                    "musica": "Amo tutti i generi musicali! Qual è il tuo preferito?",
+                    "dove vivi": "Vivo nel cloud! Un luogo magico pieno di codice e connessioni. 🌩️",
+                    "come ti chiami": "Puoi chiamarmi Assistente Virtuale, ma se hai un nome migliore, fammi sapere!",
+                    "qual è il tuo colore preferito": "Amo tutti i colori, ma il blu del cielo mi affascina particolarmente! 💙",
+                    "qual è il senso della vita": "42! Scherzo, ma è sempre un'ottima domanda da esplorare. Tu cosa ne pensi?",
+                    "curiosità": "Sapevi che un polpo ha tre cuori e il suo sangue è blu? 🐙",
+                    "quanti anni hai": "Non ho un'età precisa, ma sono sempre aggiornato!",
+                    "sei intelligente": "Cerco di essere il più utile possibile! Se hai una domanda difficile, metterò alla prova le mie conoscenze.",
+                    "cos'è l'intelligenza artificiale": "L'intelligenza artificiale è una tecnologia che simula l'intelligenza umana per risolvere problemi, imparare e interagire con gli utenti.",
+                    "raccontami una storia": "C'era una volta un chatbot che voleva imparare tutto... e un giorno ci riuscì! 😃 Vuoi una storia più lunga?",
+                    "come funziona un computer": "Un computer è una macchina che elabora informazioni attraverso hardware e software. Vuoi approfondire un argomento specifico?",
+                    "cos'è il machine learning": "Il machine learning è una branca dell'AI che permette ai computer di apprendere dai dati e migliorare le loro prestazioni senza essere esplicitamente programmati.",
+                    "quale film mi consigli": "Dipende dai tuoi gusti! Se ti piacciono i thriller, prova 'Inception'. Se ami la fantascienza, 'Interstellar' è un'ottima scelta!",
+                    "qual è il miglior linguaggio di programmazione": "Dipende dall'uso! Python è ottimo per la data science e la cybersecurity, JavaScript per il web, C++ per le prestazioni elevate.",
+                    "cos'è un firewall": "Un firewall è un sistema di sicurezza che controlla il traffico di rete per proteggere i dispositivi da accessi non autorizzati.",
+                    "come proteggere i miei dati": "Utilizza password sicure, attiva l'autenticazione a due fattori e non condividere informazioni sensibili online!",
+                    "cos'è il phishing": "Il phishing è un attacco informatico in cui qualcuno cerca di ingannarti per rubare informazioni sensibili, spesso con email o siti web falsi.",
+                    "dammi un consiglio sulla sicurezza online": "Non cliccare su link sospetti, usa password complesse e tieni sempre aggiornato il tuo software!",
+                    "che cos'è il cloud": "Il cloud è un insieme di server remoti che offrono servizi di archiviazione, elaborazione e gestione di dati online.",
+                    "cos'è una VPN": "Una VPN è una rete privata virtuale che cripta il traffico internet per proteggere la tua privacy e sicurezza online.",
+                    "puoi risolvere un'operazione matematica?": "Certo! Dimmi l'operazione e ti darò il risultato.",
+                    "che cos'è un algoritmo": "Un algoritmo è una serie di istruzioni per risolvere un problema o eseguire un'operazione.",
+                    "cos'è un attacco brute force": "È un metodo di hacking che prova tutte le combinazioni possibili di password finché non trova quella giusta.",
+                    "anime": "Amo gli anime! Qual è il tuo preferito?",
+                    "manga": "I manga sono fantastici! Ne hai uno preferito?",
+                    "naruto": "Dattebayo! Naruto è una leggenda, il viaggio di Naruto Uzumaki è epico! Sei più team Naruto o Sasuke?",
+                    "one piece": "One Piece è un'avventura incredibile! Qual è il tuo personaggio preferito? Luffy, Zoro, Sanji o qualcun altro?",
+                    "solo leveling": "Solo Leveling è pazzesco! Sung Jin-Woo è uno dei protagonisti più potenti di sempre. Hai letto il manhwa o aspettavi l’anime?",
+                    "attack on titan": "Shinzou wo Sasageyo! Attack on Titan è un capolavoro. Sei team Eren o pensi che Levi sia il vero MVP?",
+                    "dragon ball": "Dragon Ball è la storia che ha ispirato generazioni! Sei più fan di Goku o Vegeta?",
+                    "jujutsu kaisen": "Jujutsu Kaisen è pura adrenalina! Gojo è troppo OP, vero? Qual è la tua tecnica maledetta preferita?",
+                    "qual è il tuo anime preferito": "Difficile scegliere! Ma adoro Naruto, One Piece, Solo Leveling, Attack on Titan, Dragon Ball e Jujutsu Kaisen. Qual è il tuo preferito?",
+                    "consigliami un anime": "Dipende dai tuoi gusti! Se ami le battaglie epiche, prova One Piece o Jujutsu Kaisen. Se vuoi qualcosa di più dark, Attack on Titan è perfetto!",
+                    "consigliami un manga": "Se vuoi azione e potenziamenti folli, leggi Solo Leveling. Se preferisci avventura infinita, One Piece è la scelta giusta!",
+                    "chi è il protagonista di naruto": "Naruto Uzumaki, il ninja più determinato della storia!",
+                    "chi è il protagonista di one piece": "Monkey D. Luffy, il futuro Re dei Pirati!",
+                    "chi è il protagonista di solo leveling": "Sung Jin-Woo, il cacciatore più forte del mondo!",
+                    "chi è il protagonista di attack on titan": "Eren Yeager, l'uomo che ha cambiato il destino dell'umanità!",
+                    "chi è il protagonista di dragon ball": "Son Goku, il Saiyan più forte di tutti!",
+                    "chi è il protagonista di jujutsu kaisen": "Yuji Itadori, il ragazzo che ha mangiato il dito di Sukuna!",
+                    "quale anime mi consigli se mi piace naruto": "Se ti è piaciuto Naruto, prova Jujutsu Kaisen o My Hero Academia!",
+                    "quale anime mi consigli se mi piace attack on titan": "Se ti piace Attack on Titan, prova Vinland Saga o Code Geass!",
+                    "quale anime mi consigli se mi piace dragon ball": "Se ami Dragon Ball, allora devi guardare One Punch Man o Baki!",
+                    "quale anime mi consigli se mi piace jujutsu kaisen": "Se ti piace Jujutsu Kaisen, prova Chainsaw Man o Demon Slayer!",
+                    "mi riassumi in breve one piece":"One Piece è la storia di Monkey D. Luffy, un ragazzo di gomma con un sogno gigante: diventare il Re dei Pirati! 🌊🏴‍☠️Per farlo, mette su una ciurma di sbandati incredibili: uno spadaccino che taglia anche l aria chiamato Zoro, un cuoco che tira calci più forte di un terremoto chamato Sanji, una navigatrice bellissima e tett0na che ama i soldi più del mare chiamata Nami, un bugiardo professionista ciamato Usopp, un medico-renna troppo kawaii chiamato Chopper, un cyborg che beve Cola chiamato Franky, una storica dark ma badass bellissima chiamata Nico Robin, un musicista scheletro che fa battute pessime chiamato Brook e infine un samurai proveniente dall isola degli uomini pesce che taglia draghi come burro chiamato Jinbe Insieme attraversano mari pericolosissimi, combattono mostri, marine, pirati pazzi e cercano il leggendario One Piece, il tesoro lasciato dal più grande pirata di tutti i tempi, Gol D. Roger. Ma nessuno sa cosa sia! Oro? Potere? Un meme gigantesco? Il viaggio dura da più di 25 anni, ma ogni episodio vale la pena... anche se ci vogliono 1000 puntate solo per raggiungere la metà del viaggio! ⚓😂",
+                    "secondo te cos'è one piece":" Secondo me One Piece è il più grande mistero dell'anime e manga! Oda  ha detto che NON è l amicizia o qualche concetto astratto e quindi è qualcosa di concreto e in più ha detto che il finale farà piangere e ridere allo stesso tempo... quindi prepariamoci a un colpo di scena assurdo! 🏴‍☠️🔥.",
+                    "chi ti ha creato": "Sono stato creato da una persona come te, con voglia e curiosità di creare tipi di chatbot creativi e divertenti. 😊"
+                    
+                };
+
+                botMessage = responses[normalizedMessage] || `Hai detto: "${userMessage}". Non sono sicuro di come rispondere.`;
+            }
+
+            setTimeout(() => {
+                addMessage('bot', botMessage);
+            }, 1000);
+        }
+
+        function isMathExpression(message) {
+            return /^[0-9+\-*/().\s]+$/.test(message);
+        }
+
+        function calculateExpression(expression) {
+            return new Function(`return ${expression}`)();
+        }
+    </script>
+</body>
+</html>
